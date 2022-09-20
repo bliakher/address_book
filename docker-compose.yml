@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  backend:
+    restart: always
+    build: .
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src/app
+
+  postgres:
+    image: postgres
+    ports:
+      - 5433:${DB_PORT}
+    volumes:
+      - data:/data/postgres
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+
+volumes: 
+ data: {}
