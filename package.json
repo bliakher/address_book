@@ -4,9 +4,11 @@
   "description": "(App for storing contacts)",
   "main": "index.ts",
   "scripts": {
-    "start": "node index.ts",
-    "test": "run",
-    "serve": "nodemon index.ts"
+    "start": "node ./build/src/index.js",
+    "test": "nodemon index.ts",
+    "dev": "nodemon -L -e ts --exec \"npm run build && npm start\"",
+    "serve": "nodemon index.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -22,11 +24,14 @@
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "express": "^4.18.1",
-    "firebase-admin": "^11.0.1"
+    "firebase-admin": "^11.0.1",
+    "pg": "^8.8.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
     "@types/node": "^18.7.18",
+    "@types/pg": "^8.6.5",
+    "dotenv": "^16.0.2",
     "nodemon": "^2.0.20",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.3"
