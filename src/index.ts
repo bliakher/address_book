@@ -1,16 +1,19 @@
 import express from 'express';
-import { createContact } from './restAPI/endpoints';
+import "reflect-metadata";
+import { createContact, createUser } from './restAPI/endpoints';
 import dotenv from "dotenv";
 import { UserDatabase } from './user_db/UserDatabase';
 
 const app = express();
 dotenv.config();
 
+UserDatabase.initialize();
+
 app.use(express.json());
 
 app.post('/contacts', createContact);
 
-UserDatabase.getDatabase().connect();
+app.post('/register', createUser);
 
 app.listen(process.env.PORT, () => {
     console.log("Server running on port " + process.env.PORT);
