@@ -4,6 +4,8 @@ import { ITokenData } from './TokenData';
 import { Request, Response, NextFunction } from 'express';
 import { respondNotAuthenticated } from '../restAPI/endpoints';
 
+const TOKEN_VALID_PERIOD = '15m';
+
 export interface RequestWithToken extends Request {
     token: ITokenData;
 }
@@ -54,7 +56,7 @@ export class TokenManager {
     
     public createToken(user: User): string {
         const data = this.createTokenData(user);
-        return jwt.sign(data, this.secret);
+        return jwt.sign(data, this.secret, { expiresIn: TOKEN_VALID_PERIOD });
     }
 
     public verifyToken(token: string) {
