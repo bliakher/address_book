@@ -11,7 +11,17 @@ export interface IUserRequest {
     password: string;
 }
 
+export interface ILoginRequest {
+    email: string;
+    password: string;
+}
+
 export interface ICreateResponse {
     success: boolean;
     id: string;
+}
+
+export interface IErrorResponse {
+    success: false;
+    error: string;
 }

@@ -37,7 +37,7 @@ export class UserDatabase {
         return UserDatabase.instance;
     }
 
-    public async createUser(email: string, password: string): Promise<number | undefined> {
+    public async createUser(email: string, password: string): Promise<User | undefined> {
         const user = new User();
         user.email = email;
         user.salt = PasswordUtils.generateRandomSalt();
@@ -45,7 +45,7 @@ export class UserDatabase {
         try {
             await this.dataSource.manager.save(user);
             console.log("New user created with id", user.id);
-            return user.id;
+            return user;
         } catch(error) {
             console.log(error);
             return undefined;
@@ -53,7 +53,7 @@ export class UserDatabase {
     }
 
     public async hasUser(email: string): Promise<boolean> {
-        const user = this.getUser(email);
+        const user = await this.getUser(email);
         // console.log("found user", user);
         return user !== null;
     }

@@ -21,11 +21,13 @@
   },
   "homepage": "https://github.com/bliakher/address_book#readme",
   "dependencies": {
+    "@types/jsonwebtoken": "^8.5.9",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "es6-shim": "^0.35.6",
     "express": "^4.18.1",
     "firebase-admin": "^11.0.1",
+    "jsonwebtoken": "^8.5.1",
     "pg": "^8.8.0",
     "reflect-metadata": "^0.1.13",
     "sha512-crypt-ts": "^0.1.27",
