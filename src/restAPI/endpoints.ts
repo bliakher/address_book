@@ -1,28 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { AuthenticationService } from '../authentication/AuthenticationService';
 import { RequestWithToken, TokenManager } from '../authentication/TokenManager';
 import { IContact } from '../contact_db/Contact';
 import { ContactDatabase } from '../contact_db/ContactDatabase';
 import { User } from '../user_db/User';
 import { UserDatabase } from '../user_db/UserDatabase';
-import { IContactRequest, ICreateResponse, IErrorResponse, ILoginRequest, IUserRequest } from './model';
+import { IContactRequest, IErrorResponse, ILoginRequest, IUserRequest } from './model';
+import { validateContactRequest, validateUserRequest } from './validators';
 
-
-export const authenticateAndDecodeUser = (req: Request, res: Response, next: NextFunction) => {
-    const token = parseToken(req);
-    const tokenManager = TokenManager.getManager();
-    const data = tokenManager.decodeData(token);
-    
-}
-
-// Authorization: Bearer <token>
-const parseToken: (req: Request) => string | undefined = (req: Request) => {
-    const authorizaionHeader = req.headers['authorization'];
-    if (!authorizaionHeader) return undefined;
-    const splited = authorizaionHeader.split(' ');
-    if(splited[0] != "Bearer" || splited.length < 2) return undefined;
-    return splited[1];
-}
 
 export const createContact = async (req: Request, res: Response) => {
     console.log("create contact request");
@@ -37,40 +22,49 @@ export const createContact = async (req: Request, res: Response) => {
         res.json(getErrorResponse("Unknown user: " + token.user));
         return;
     }
-
-    const contactRequest: IContactRequest = req.body; // ToDo: validate data
-    const familyName = contactRequest.familyName ?? "";
-    const givenName = contactRequest.givenName ?? "";
-    const phoneNumber = contactRequest.phoneNumber ?? "";
-    const address = contactRequest.address ?? "";
-    const email = user.email;
-    const newContact : IContact = {familyName, givenName, phoneNumber, address, user: email};
+    const contactRequest: IContactRequest = req.body;
+    if (!validateContactRequest(contactRequest)) {
+        res.status(400);
+        res.json(getErrorResponse("Contact data has incorrect format"));
+        return;
+    }
+    const newContact : IContact = {
+        familyName: contactRequest.familyName, 
+        givenName: contactRequest.givenName, 
+        phoneNumber: contactRequest.phoneNumber,
+        address: contactRequest.address, 
+        user: user.email};
 
     const db = ContactDatabase.getDatabase();
     const newId = await db.createContact(newContact);
+    const success = newId !== undefined;
 
-    const response: ICreateResponse = {success: newId !== undefined, id: newId};
+    if (success) {
+        res.status(200);
+        res.json({success: true, id: newId});
+    } else {
+        res.status(500);
+        res.json(getErrorResponse("Contact couldn't be created - database error"));
+    }
 
-    res.json(response);
-    res.status(200); // ToDo: handle error situations
 }
 
 export const createUser = async (req: Request, res: Response) => {
     console.log("create user request");
     const userRequest: IUserRequest = req.body;
-    // ToDo: validate email and password
-    const email = userRequest.email ?? "";
-    const password = userRequest.password ?? "";
-
-    const db = UserDatabase.getDatabase();
-    const hasUser = await db.hasUser(email);
-    console.log("has user " + email + ": ", hasUser);
-    if (hasUser) {
-        res.status(409); // Conflict
-        res.json(getErrorResponse("User with email " + email + " already exists."));
+    if (!validateUserRequest(userRequest)) {
+        res.status(400);
+        res.json(getErrorResponse("User name or password have incorrect format"));
         return;
     }
-    const user = await db.createUser(email, password);
+    const db = UserDatabase.getDatabase();
+    const hasUser = await db.hasUser(userRequest.email);
+    if (hasUser) {
+        res.status(409); // Conflict
+        res.json(getErrorResponse("User with email " + userRequest.email + " already exists."));
+        return;
+    }
+    const user = await db.createUser(userRequest.email, userRequest.password);
     const success = user.id !== undefined;
 
     if (success) {
@@ -84,7 +78,11 @@ export const createUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
     console.log("login request");
     const loginRequest: ILoginRequest = req.body;
-    // ToDo: validate email and password
+    if (!loginRequest.email || !loginRequest.password) {
+        res.status(400);
+        res.json(getErrorResponse("Email or password are missing from request."));
+        return;
+    }
     const db = UserDatabase.getDatabase();
     const user = await db.getUser(loginRequest.email);
 
