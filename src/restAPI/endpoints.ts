@@ -25,6 +25,7 @@ const parseToken: (req: Request) => string | undefined = (req: Request) => {
 }
 
 export const createContact = async (req: Request, res: Response) => {
+    console.log("create contact request");
     const token = (req as RequestWithToken).token;
     if (!token) {
         respondNotAuthenticated(res);
@@ -55,6 +56,7 @@ export const createContact = async (req: Request, res: Response) => {
 }
 
 export const createUser = async (req: Request, res: Response) => {
+    console.log("create user request");
     const userRequest: IUserRequest = req.body;
     // ToDo: validate email and password
     const email = userRequest.email ?? "";
@@ -80,6 +82,7 @@ export const createUser = async (req: Request, res: Response) => {
 }
 
 export const loginUser = async (req: Request, res: Response) => {
+    console.log("login request");
     const loginRequest: ILoginRequest = req.body;
     // ToDo: validate email and password
     const db = UserDatabase.getDatabase();
