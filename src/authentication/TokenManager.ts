@@ -4,12 +4,21 @@ import { ITokenData } from './TokenData';
 import { Request, Response, NextFunction } from 'express';
 import { respondNotAuthenticated } from '../restAPI/endpoints';
 
+/** Time after which a token expires */
 const TOKEN_VALID_PERIOD = '15m';
 
+/**
+ * HTTP request with authentication token
+ */
 export interface RequestWithToken extends Request {
     token: ITokenData;
 }
 
+/**
+ * Athentication tokens manager
+ * Creates, verifies and decodes JWT tokens
+ * Implemented as a singleton
+ */
 export class TokenManager {
 
     private static instance: TokenManager;
@@ -23,6 +32,13 @@ export class TokenManager {
         return this.instance;
     }
 
+    /**
+     * Authentication middleware for express
+     * Parses auth. token from authorization header and includes it in the request
+     * @param req HTTP Request
+     * @param res HTTP Response
+     * @param next next function
+     */
     public static authenticationMiddleware(req: Request, res: Response, next: NextFunction) {
         const token = TokenManager.parseToken(req);
         if (!token) {
@@ -30,13 +46,11 @@ export class TokenManager {
             return;
         }
         jwt.verify(token, process.env.TOKEN_SECRET, (error, decoded) => {
-            console.log("decoding token - error: ", error, ", decoded: ", decoded);
             if (error) {
                 respondNotAuthenticated(res);
                 return;
             }
             const data = decoded as ITokenData;
-            console.log("data: ", data);
             if (data.user === undefined) {
                 respondNotAuthenticated(res);
                 return;
@@ -54,24 +68,14 @@ export class TokenManager {
         return splited[1];
     }
     
+    /**
+     * Creates a new JWT token from user data
+     * @param user User to authenticate
+     * @returns encoded token
+     */
     public createToken(user: User): string {
         const data = this.createTokenData(user);
         return jwt.sign(data, this.secret, { expiresIn: TOKEN_VALID_PERIOD });
-    }
-
-    public verifyToken(token: string) {
-        return jwt.verify(token, this.secret);
-    }
-
-    public decodeData(token: string): void {
-        jwt.verify(token, this.secret, (error, decoded) => {
-            console.log("decoding token - error: ", error, ", decoded: ", decoded);
-            if (error) return undefined;
-            const data = decoded as ITokenData;
-            console.log("data: ", data);
-            if (data.user === undefined) return undefined;
-            return data;
-        });
     }
 
     private createTokenData(user: User): ITokenData {

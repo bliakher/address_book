@@ -8,7 +8,13 @@ import { UserDatabase } from '../user_db/UserDatabase';
 import { IContactRequest, IErrorResponse, ILoginRequest, IUserRequest } from './model';
 import { validateContactRequest, validateUserRequest } from './validators';
 
-
+/**
+ * Handler for a request to create new contact for authenticated user
+ * Gets user data from authentication token, checks that user exist.
+ * Creates a new contact in the contact database.
+ * @param req HTTP Request
+ * @param res HTTP Response
+ */
 export const createContact = async (req: Request, res: Response) => {
     console.log("create contact request");
     const token = (req as RequestWithToken).token;
@@ -48,7 +54,14 @@ export const createContact = async (req: Request, res: Response) => {
     }
 
 }
-
+/**
+ * Handler for a request to register new user.
+ * Checks that user with that email doesn't exist already.
+ * Creates new user in the user database.
+ * Responds with an authentication token
+ * @param req HTTP Request
+ * @param res HTTP Response
+ */
 export const createUser = async (req: Request, res: Response) => {
     console.log("create user request");
     const userRequest: IUserRequest = req.body;
@@ -74,7 +87,13 @@ export const createUser = async (req: Request, res: Response) => {
         res.json(getErrorResponse("User couldn't be registered."));
     }
 }
-
+/**
+ * Handler for a request to login an existing user.
+ * Checks that the user exists and that the password is correct.
+ * Responds with an authentication token
+ * @param req HTTP Request
+ * @param res HTTP Response
+ */
 export const loginUser = async (req: Request, res: Response) => {
     console.log("login request");
     const loginRequest: ILoginRequest = req.body;
@@ -100,10 +119,20 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ * Function to generate an error response with error message
+ * @param errorMsg Error message explaining the error
+ * @returns Error response object
+ */
 const getErrorResponse: (errorMsg: string) => IErrorResponse = (errorMsg: string) => {
     return { success: false, error: errorMsg };
 }
 
+/**
+ * Response after a correct authentication, contains a valid JWT token
+ * @param user Authenticated user to create token for
+ * @param res HTTP Response
+ */
 const respondWithAuthToken = (user: User, res: Response) => {
     const tokenManager = TokenManager.getManager();
     const token = tokenManager.createToken(user);
@@ -111,6 +140,10 @@ const respondWithAuthToken = (user: User, res: Response) => {
     res.json({success: true, token: token});
 }
 
+/**
+ * Response after an incorrect authentication
+ * @param res HTTP Response
+ */
 export const respondNotAuthenticated = (res: Response) => {
     res.status(401);
     res.json(getErrorResponse("Unathorized access"));
