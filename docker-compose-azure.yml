@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  backend:
+    restart: always
+    image: addressbookstrv.azurecr.io/address_book_backend:80
+    depends_on:
+      - postgres
+    domainname: strv-addressbook-golubeva
+    ports:
+      - "80:80"
+
+  postgres:
+    image: postgres
+    volumes:
+      - userdata:/data/postgres
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+
+volumes: 
+  userdata:
+    driver: azure_file
+    driver_opts:
+      share_name: fileshare1
+      storage_account_name: strvgolubevastorage

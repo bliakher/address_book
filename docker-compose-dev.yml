@@ -22,4 +22,4 @@ services:
       - POSTGRES_USER=${DB_USER}
 
 volumes: 
- data: {}
+  data: {}
