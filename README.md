@@ -12,27 +12,32 @@ Summary:
 
 ##### Register new user
 POST /register
+```
 {
     "email" : "",
     "password" : ""
 }
+```
 
 ##### Login existing user
 POST /login
+```
 {
     "email" : "",
     "password" : ""
 }
+```
 
 ##### Create new contact for authenticated user
 POST /contacts
+```
 {
     "familyName" : "",
     "givenName" : "",
     "phoneNumber" : "",
     "address" : ""
 }
-
+```
 
 ### Project structure
 
