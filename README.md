@@ -36,6 +36,36 @@ POST /contacts
 
 ### Project structure
 
+App uses the Express.js library.
+
+#### API
+
+#### Authentication
+
+JWT tokens are used for authentication. After password correctnes is checked in login, app creates a JWT token, that contains user email. 
+Token is valid for 15 minutes.
+
+Passwords are saved as hashes with salt unique per user and pepper, which is common for all users.
+
+#### Databases
+
+- contact info - Firestore from Firebase
+    - directory `contact_db`
+
+- user account info - Postgress in a container
+    - accessed with TypeORM   
+    - directory `user_db`
+
+### Tests
+
+Jest framework is used for testing. Test are located in the `test` directory. To run tests:
+
+```
+npm run build
+npm run test
+```
+
+
 ### Possible extensions
 - CI/CD for container build and deployment
 - SSL - user passwords are now sent over HTTP
