@@ -1,29 +1,24 @@
 import express from 'express';
 import "reflect-metadata";
-import { createContact, createUser, loginUser } from './restAPI/endpoints';
 import dotenv from "dotenv";
 import { UserDatabase } from './user_db/UserDatabase';
 import { TokenManager } from './authentication/TokenManager';
+import { ServiceContainerBuilder } from './ServiceContainer';
+import { configureExpress, registerAppServices } from './app';
 
-const app = express();
-dotenv.config();
+(async () => {
 
-// connect to the user database
-UserDatabase.initialize();
 
-app.use(express.json());
+    dotenv.config();
 
-// create a new contact, only for authenticated users
+    const containerBuilder = new ServiceContainerBuilder();
+    registerAppServices(containerBuilder);
+    const services = await containerBuilder.build();
+    const app = configureExpress(services);
 
-app.post('/contacts', TokenManager.authenticationMiddleware, createContact);
+    app.listen(process.env.PORT, () => {
+        console.log("Server running on port " + process.env.PORT);
+    });
 
-// register a new user account
-app.post('/register', createUser);
 
-// login existing user
-app.post('/login', loginUser);
-
-app.listen(process.env.PORT, () => {
-    console.log("Server running on port " + process.env.PORT);
-});
-
+})()

@@ -1,11 +1,11 @@
-import * as firebaseAdmin from 'firebase-admin';
+import * as firebase from 'firebase-admin';
 import serviceAccount from '../keys/serviceAdminKey.json';
 import { IContact } from './Contact';
 
 /**
  * Name of collection in Firestore
  */
-const CONTACT_COLLECTION  = 'contacts';
+const CONTACT_COLLECTION = 'contacts';
 
 /**
  * Account params for Firebase
@@ -28,25 +28,15 @@ const serviceAccountParams = {
  */
 export class ContactDatabase {
 
-    private static instance: ContactDatabase;
-
-    private firestore: any;
-    private constructor() {
-        firebaseAdmin.initializeApp({
-            credential: firebaseAdmin.credential.cert(serviceAccountParams)
-        });
-        this.firestore = firebaseAdmin.firestore();
+    private firestore: firebase.firestore.Firestore;
+    constructor() {
     }
 
-    /**
-     * Get connected database instance.
-     * @returns database instance
-     */
-    public static getDatabase(): ContactDatabase {
-        if (!ContactDatabase.instance) {
-            ContactDatabase.instance = new ContactDatabase();
-        }
-        return ContactDatabase.instance;
+    public initialize(): void {
+        firebase.initializeApp({
+            credential: firebase.credential.cert(serviceAccountParams)
+        });
+        this.firestore = firebase.firestore();
     }
 
     /**
@@ -62,5 +52,26 @@ export class ContactDatabase {
             console.log("error when creating contact");
         }
         return response.id;
+    }
+}
+
+
+export class ContactDatabaseMock extends ContactDatabase {
+
+    readonly mockStore = new Map<string, IContact>();
+
+    private index = 0;
+
+    constructor() {
+        super();
+    }
+
+    public initialize(): void { }
+
+    public createContact(newContact: IContact): Promise<string> {
+        const id = this.index.toString();
+        this.mockStore.set(id, newContact);
+        this.index++;
+        return Promise.resolve(id);
     }
 }

@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../user_db/User';
 import { ITokenData } from './TokenData';
 import { Request, Response, NextFunction } from 'express';
-import { respondNotAuthenticated } from '../restAPI/endpoints';
+import { respond } from '../rest_api/responses';
 
 /** Time after which a token expires */
 const TOKEN_VALID_PERIOD = '15m';
@@ -21,15 +21,8 @@ export interface RequestWithToken extends Request {
  */
 export class TokenManager {
 
-    private static instance: TokenManager;
     private secret: string = process.env.TOKEN_SECRET;
-    private constructor() {
-    }
-    public static getManager() {
-        if (!this.instance) {
-            this.instance = new TokenManager();
-        }
-        return this.instance;
+    constructor() {
     }
 
     /**
@@ -39,24 +32,38 @@ export class TokenManager {
      * @param res HTTP Response
      * @param next next function
      */
-    public static authenticationMiddleware(req: Request, res: Response, next: NextFunction) {
+    public async authenticationMiddleware(req: Request, res: Response, next: NextFunction) {
         const token = TokenManager.parseToken(req);
         if (!token) {
-            respondNotAuthenticated(res);
+            respond.notAuthenticated(res);
             return;
         }
-        jwt.verify(token, process.env.TOKEN_SECRET, (error, decoded) => {
-            if (error) {
-                respondNotAuthenticated(res);
-                return;
-            }
-            const data = decoded as ITokenData;
-            if (data.user === undefined) {
-                respondNotAuthenticated(res);
-                return;
-            }
-            (req as RequestWithToken).token = data;
-            next();
+
+        try {
+            const decoded = await this.decodeVerify(token);
+            (req as RequestWithToken).token = decoded;
+        } catch (e) {
+            respond.notAuthenticated(res);
+            return;
+        }
+
+        next();
+    }
+
+    public decodeVerify(token: string): Promise<ITokenData> {
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, process.env.TOKEN_SECRET, (error, decoded) => {
+                if (error) {
+                    reject();
+                    return;
+                }
+                const data = decoded as ITokenData;
+                if (data.user === undefined) {
+                    reject();
+                    return;
+                }
+                resolve(data);
+            });
         });
     }
 
@@ -64,10 +71,10 @@ export class TokenManager {
         const authorizaionHeader = req.headers['authorization'];
         if (!authorizaionHeader) return undefined;
         const splited = authorizaionHeader.split(' ');
-        if(splited[0] != "Bearer" || splited.length < 2) return undefined;
+        if (splited[0] != "Bearer" || splited.length < 2) return undefined;
         return splited[1];
     }
-    
+
     /**
      * Creates a new JWT token from user data
      * @param user User to authenticate

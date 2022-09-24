@@ -23,10 +23,3 @@ export interface ILoginRequest {
     email: string;
     password: string;
 }
-/**
- * Body of response to a request with errors
- */
-export interface IErrorResponse {
-    success: false;
-    error: string;
-}
