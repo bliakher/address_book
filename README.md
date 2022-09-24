@@ -20,10 +20,10 @@ POST /register
 }
 ```
 
-**Responses:**
+*Responses:*
 
 - successfull registration:
-    - logins user and returns authentication token 
+    - logins user and returns authentication token - 200
 
 ```
 {
@@ -47,13 +47,37 @@ POST /register
 ```
 
 
-
 ##### Login existing user
 POST /login
 ```
 {
     "email" : "",
     "password" : ""
+}
+```
+
+*Responses:*
+
+- successfull login:
+    - returns authentication token - 200
+
+```
+{
+    "success": true,
+    "token": "..."
+}
+```
+
+- errors:
+    - returns an error message
+    - possible errors:
+        - email or password is missing from request - 400
+        - incorrect email or password - 401
+
+```
+{
+    "success": false,
+    "error": "..."
 }
 ```
 
@@ -68,11 +92,36 @@ POST /contacts
 }
 ```
 
+*Responses:*
+
+- successfull contact creation:
+    - returns id of created contact - 200
+
+```
+{
+    "success": true,
+    "id": "..."
+}
+```
+
+- errors:
+    - returns an error message
+    - possible errors:
+        - incorrect authentication token - unathorized - 401
+        - contact information is missing fields or they are in incorrect format - 400
+
+```
+{
+    "success": false,
+    "error": "..."
+}
+```
+
 ### Project structure
 
+Application code is inside the `src` directory.
 App uses the Express.js library.
 
-#### API
 
 #### Authentication
 
