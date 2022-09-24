@@ -69,7 +69,7 @@ export namespace respond {
      */
     export function notAuthenticated(res: Response, error?: string) {
         res.status(401);
-        const body = this.getErrorResponse(error ?? "Unathorized access");
+        const body = { success: false, error: error ?? 'Unauthorized access' };
         res.json(body);
         return body;
     }
