@@ -28,7 +28,7 @@ export function getMockedResponseJson(res: Response) {
 
 export function mockUserDataSource(builder: ServiceContainerBuilder): DataSource {
     const ds = new DataSource({
-        type: 'better-sqlite3',
+        type: 'sqlite',
         database: ':memory:',
         dropSchema: true,
         entities: [User],
