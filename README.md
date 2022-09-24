@@ -2,13 +2,14 @@
 
 Backend of an app to store contact information
 
-App is hosted on Azure: 
+App is hosted on [Azure](http://strv-addressbook-golubeva.westeurope.azurecontainer.io/).
 
 ### Rest API
 
-Rest API is documented using OpenAPI [here]().
-
-Summary:
+API allows to:
+- register new user account
+- login registered user
+- add new contact for authenticated user
 
 ##### Register new user
 POST /register
@@ -18,6 +19,34 @@ POST /register
     "password" : ""
 }
 ```
+
+**Responses:**
+
+- successfull registration:
+    - logins user and returns authentication token 
+
+```
+{
+    "success": true,
+    "token": "..."
+}
+```
+
+- errors:
+    - returns an error message
+    - possible errors:
+        - user with email already exists - 400
+        - email or password has incorrect format - 400
+        - database error - 500
+
+```
+{
+    "success": false,
+    "error": "..."
+}
+```
+
+
 
 ##### Login existing user
 POST /login
