@@ -47,6 +47,7 @@ export class UserDatabase {
      */
     public async hasUser(email: string): Promise<boolean> {
         this.assertInitialized();
+        if (!email) return false;
         const user = await this.getUser(email);
         return user !== null;
     }

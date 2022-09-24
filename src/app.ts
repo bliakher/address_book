@@ -27,7 +27,7 @@ export function registerAppServices(builder: ServiceContainerBuilder) {
         return new UserDatabase(container.userDataSource);
     };
     builder.contactDatabaseFactory = () => new ContactDatabase();
-    builder.tokenManagerFactory = () => new TokenManager();
+    builder.tokenManagerFactory = (container) => new TokenManager(container);
 }
 
 

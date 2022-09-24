@@ -30,20 +30,15 @@ export class Controller {
      * @param res HTTP Response
      */
     public async createContact(req: Request, res: Response) {
-        console.log("create contact request");
+        console.log('create contact request');
         const token = (req as RequestWithToken).token;
         if (!token) {
             respond.notAuthenticated(res);
             return;
         }
-        const user = await this.userDatabase.getUser(token.user);
-        if (!user) {
-            respond.badRequest(res, "Unknown user: " + token.user);
-            return;
-        }
         const contactRequest: IContactRequest = req.body;
         if (!validateContactRequest(contactRequest)) {
-            respond.badRequest(res, "Contact data has incorrect format");
+            respond.badRequest(res, 'Contact data has incorrect format');
             return;
         }
         const newContact: IContact = {
@@ -51,7 +46,7 @@ export class Controller {
             givenName: contactRequest.givenName,
             phoneNumber: contactRequest.phoneNumber,
             address: contactRequest.address,
-            user: user.email
+            user: token.user
         };
 
         const newId = await this.contactDatabase.createContact(newContact);
@@ -60,7 +55,7 @@ export class Controller {
         if (success) {
             respond.withId(res, newId);
         } else {
-            respond.serverError(res, "Contact couldn't be created - database error");
+            respond.serverError(res, 'Contact couldn\'t be created - database error');
         }
     }
 
@@ -73,15 +68,15 @@ export class Controller {
  * @param res HTTP Response
  */
     public async createUser(req: Request, res: Response) {
-        console.log("create user request");
+        console.log('create user request');
         const userRequest: IUserRequest = req.body;
         if (!validateUserRequest(userRequest)) {
-            respond.badRequest(res, "User name or password have incorrect format");
+            respond.badRequest(res, 'User name or password have incorrect format');
             return;
         }
         const hasUser = await this.userDatabase.hasUser(userRequest.email);
         if (hasUser) {
-            respond.badRequest(res, "User with email " + userRequest.email + " already exists.")
+            respond.badRequest(res, 'User with email ' + userRequest.email + ' already exists.')
             return;
         }
         const user = await this.userDatabase.createUser(userRequest.email, userRequest.password);
@@ -91,7 +86,7 @@ export class Controller {
             const token = this.tokenManager.createToken(user);
             respond.withAuthToken(res, token);
         } else {
-            respond.serverError(res, "User couldn't be registered.");
+            respond.serverError(res, 'User couldn\'t be registered.');
         }
     }
 
@@ -103,23 +98,23 @@ export class Controller {
      * @param res HTTP Response
      */
     public async loginUser(req: Request, res: Response) {
-        console.log("login request");
+        console.log('login request');
         const loginRequest: ILoginRequest = req.body;
         if (!loginRequest.email || !loginRequest.password) {
-            respond.badRequest(res, "Email or password are missing from request.");
+            respond.badRequest(res, 'Email or password are missing from request.');
             return;
         }
         const user = await this.userDatabase.getUser(loginRequest.email);
 
         if (!user) {
-            respond.notFound(res, "Invalid email " + loginRequest.email);
+            respond.notAuthenticated(res, 'Invalid email or password');
             return;
         }
         const correctPswd = AuthenticationService.isCorrectPassword(user, loginRequest.password, process.env.PEPPER);
         if (correctPswd) {
             respond.withAuthToken(res, this.tokenManager.createToken(user));
         } else {
-            respond.notAuthenticated(res, "Incorrect password");
+            respond.notAuthenticated(res, 'Invalid email or password');
         }
     }
 }

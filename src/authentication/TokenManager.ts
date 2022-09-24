@@ -3,6 +3,8 @@ import { User } from '../user_db/User';
 import { ITokenData } from './TokenData';
 import { Request, Response, NextFunction } from 'express';
 import { respond } from '../rest_api/responses';
+import { UserDatabase } from '../user_db/UserDatabase';
+import { ServiceContainer } from '../ServiceContainer';
 
 /** Time after which a token expires */
 const TOKEN_VALID_PERIOD = '15m';
@@ -21,8 +23,11 @@ export interface RequestWithToken extends Request {
  */
 export class TokenManager {
 
-    private secret: string = process.env.TOKEN_SECRET;
-    constructor() {
+    private readonly secret: string = process.env.TOKEN_SECRET;
+    private readonly userDb: UserDatabase;
+
+    constructor(container: ServiceContainer) {
+        this.userDb = container.userDatabase;
     }
 
     /**
@@ -52,17 +57,19 @@ export class TokenManager {
 
     public decodeVerify(token: string): Promise<ITokenData> {
         return new Promise((resolve, reject) => {
-            jwt.verify(token, process.env.TOKEN_SECRET, (error, decoded) => {
+            jwt.verify(token, this.secret, (error, decoded) => {
                 if (error) {
                     reject();
                     return;
                 }
                 const data = decoded as ITokenData;
-                if (data.user === undefined) {
-                    reject();
-                    return;
-                }
-                resolve(data);
+                this.userDb.hasUser(data.user).then(has => {
+                    if (has) {
+                        resolve(data);
+                    } else {
+                        reject();
+                    }
+                });
             });
         });
     }
