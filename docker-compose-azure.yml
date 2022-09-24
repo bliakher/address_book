@@ -2,7 +2,7 @@ version: '3.9'
 services:
   backend:
     restart: always
-    image: addressbookstrv.azurecr.io/address_book_backend:80
+    image: addressbookstrv.azurecr.io/address_book:latest
     depends_on:
       - postgres
     domainname: strv-addressbook-golubeva
