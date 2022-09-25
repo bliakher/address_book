@@ -2,7 +2,7 @@
 
 Backend of an app to store contact information
 
-App is hosted on Azure: http://strv-addressbook-golubeva.westeurope.azurecontainer.io/
+App is hosted on Azure: http://strv-addressbook-golubeva.westeurope.azurecontainer.io/ on port 80
 
 ### Rest API
 
